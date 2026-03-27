@@ -1,5 +1,4 @@
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 export interface CrawledCompetition {
   id: string;
@@ -28,8 +27,7 @@ export async function crawlMoeCompetitions(): Promise<CrawledCompetition[]> {
       'Connection': 'keep-alive'
     };
 
-    const response = await axios.get(url, { headers });
-    const $ = cheerio.load(response.data);
+    await axios.get(url, { headers });
     
     // 解析搜索结果
     const competitions: CrawledCompetition[] = [];

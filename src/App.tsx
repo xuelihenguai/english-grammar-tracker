@@ -70,7 +70,6 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [uploadStatus, setUploadStatus] = useState<string>('');
-  const [filterLevel, setFilterLevel] = useState<string>('全部');
   const [sortColumn, setSortColumn] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
@@ -114,7 +113,7 @@ function App() {
         throw error;
       }
       
-      if (users.length > 0) {
+      if (users && users.length > 0) {
         setUser(users[0]);
       } else {
         setLoginError('用户名或密码错误');
@@ -175,7 +174,7 @@ function App() {
         .eq('username', username)
         .eq('password', password);
       
-      if (users.length > 0) {
+      if (users && users.length > 0) {
         setUser(users[0]);
       }
     } catch (error) {
@@ -1088,7 +1087,11 @@ function App() {
                       zIndex: 0,
                       pointerEvents: 'none'
                     }}>
-                      {grammarTypes.find(g => g.id === selectedGrammarType)?.name + (grammarTypes.find(g => g.id === selectedGrammarType)?.total_questions > 0 ? ` (${grammarTypes.find(g => g.id === selectedGrammarType)?.total_questions}题)` : '')}
+                      {(() => {
+                        const selectedGrammar = grammarTypes.find(g => g.id === selectedGrammarType);
+                        if (!selectedGrammar) return '';
+                        return selectedGrammar.name + (selectedGrammar.total_questions && selectedGrammar.total_questions > 0 ? ` (${selectedGrammar.total_questions}题)` : '');
+                      })()}
                     </div>
                   )}
                 </div>
@@ -1097,7 +1100,7 @@ function App() {
                   placeholder="完成题数" 
                   className="question-input"
                   value={completedQuestions}
-                  onChange={(e) => setCompletedQuestions(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                  onChange={(e) => setCompletedQuestions(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                   min="1"
                   step="30"
                 />
@@ -1373,14 +1376,14 @@ function App() {
                 <input 
                   type="number" 
                   value={newGrammarQuestions}
-                  onChange={(e) => setNewGrammarQuestions(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                  onChange={(e) => setNewGrammarQuestions(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                   className="grammar-questions-input"
                   min="0"
                 />
                 <input 
                   type="number" 
                   value={newGrammarSort}
-                  onChange={(e) => setNewGrammarSort(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                  onChange={(e) => setNewGrammarSort(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                   className="grammar-sort-input"
                   min="0"
                 />
@@ -1435,7 +1438,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(filterLevel === '全部' ? grammarTypes : grammarTypes.filter(g => g.level === filterLevel)).sort((a, b) => {
+                    {grammarTypes.sort((a, b) => {
                       if (sortColumn === 'level') {
                         if (a.level === b.level) return 0;
                         return sortDirection === 'asc' ? (a.level === '初中' ? -1 : 1) : (a.level === '高中' ? -1 : 1);
